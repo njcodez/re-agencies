@@ -1,0 +1,78 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl= env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum ProductStatus {
+  AVAILABLE
+  OUT_OF_STOCK
+}
+
+enum OrderStatus {
+  UNDER_REVIEW
+  PAYMENT_PENDING
+  OUT_FOR_DELIVERY
+  DELIVERED
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  name      String
+  email     String     @unique
+  address   String?
+  phone     String?
+  role      UserRole   @default(CUSTOMER)
+  orders    Order[]
+  messages  Message[]
+}
+
+model Product {
+  id          Int            @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  images      String[]
+  stock       Int
+  status      ProductStatus  @default(AVAILABLE)
+  orders      ProductOrder[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Order {
+  id          Int            @id @default(autoincrement())
+  userId      Int
+  status      OrderStatus    @default(UNDER_REVIEW)
+  totalAmount Float
+  products    ProductOrder[]
+  createdAt   DateTime       @default(now())
+  user        User           @relation(fields: [userId], references: [id])
+}
+
+model ProductOrder {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  orderId     Int
+  quantity    Int
+  product     Product  @relation(fields: [productId], references: [id])
+  order       Order    @relation(fields: [orderId], references: [id])
+}
+
+model Message {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  content     String
+  sentAt      DateTime @default(now())
+  isRead      Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id])
+}
