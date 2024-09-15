@@ -34,17 +34,19 @@ model User {
   role      UserRole   @default(CUSTOMER)
   orders    Order[]
   messages  Message[]
+  cartItems CartItem[]
 }
 
 model Product {
   id          Int            @id @default(autoincrement())
   name        String
   description String
+  brandName   String
   price       Float
   images      String[]
-  stock       Int
   status      ProductStatus  @default(AVAILABLE)
   orders      ProductOrder[]
+  cartItems   CartItem[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 }
@@ -75,4 +77,13 @@ model Message {
   sentAt      DateTime @default(now())
   isRead      Boolean  @default(false)
   user        User     @relation(fields: [userId], references: [id])
+}
+
+model CartItem {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  productId   Int
+  quantity    Int      @default(1)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }

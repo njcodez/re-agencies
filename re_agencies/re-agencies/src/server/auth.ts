@@ -6,7 +6,6 @@ import {
 } from "next-auth";
 import { type Adapter } from "next-auth/adapters";
 
-
 import { env } from "~/env";
 import { db } from "~/server/db";
 
@@ -48,7 +47,6 @@ export const authOptions: NextAuthOptions = {
   },
   adapter: PrismaAdapter(db) as Adapter,
   providers: [
-   
     /**
      * ...add more providers here.
      *

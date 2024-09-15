@@ -1,9 +1,10 @@
 "use client";
 import Link from 'next/link';
-import { BellIcon, ShoppingCartIcon, UserIcon } from '@heroicons/react/24/outline';
+import { BellIcon, ShoppingCartIcon } from '@heroicons/react/24/outline'; // Removed UserIcon
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useState } from 'react';
 import Image from 'next/image';
+import { motion } from 'framer-motion'; // For animation
 
 const Header = () => {
   const { data: session } = useSession();
@@ -19,10 +20,10 @@ const Header = () => {
   return (
     <header className="fixed top-0 left-0 w-full p-4 bg-white shadow-md z-50 flex items-center justify-between">
       {/* Left Side: Logo */}
-      <div className="flex items-center">
+      <Link href="/" className="flex items-center">
         <Image src="/logo.png" alt="RE Agencies" width={48} height={48} className="w-12 h-12" />
-        <span className="ml-2 text-xl font-bold font-poppins">RE Agencies</span>
-      </div>
+        <span className="ml-2 text-xl font-bold font-poppins text-dark-green">RE Agencies</span>
+      </Link>
 
       {/* Right Side: Icons and User Menu */}
       <div className="flex items-center space-x-6"> {/* Increased space between elements */}
@@ -33,7 +34,12 @@ const Header = () => {
             <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">3</div>
           </button>
           {isNotificationDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-md z-10">
+            <motion.div 
+              className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-md z-10"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
               <div className="p-4">
                 <p className="font-semibold text-gray-700">Notifications</p>
                 <ul className="mt-2">
@@ -41,11 +47,11 @@ const Header = () => {
                     <li key={notif.id} className="text-sm text-gray-600 py-1">{notif.message}</li>
                   ))}
                 </ul>
-                <Link href="/messages" className="block mt-4 text-center text-sm text-indigo-600 hover:text-indigo-500">
+                <Link href="/messages" className="block mt-4 text-left text-sm text-dark-green hover:text-dark-green">
                   More
                 </Link>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
 
@@ -60,7 +66,7 @@ const Header = () => {
             // Logged In: Show Google Avatar and Profile Dropdown
             <div>
               <Image
-                src={session.user?.image || '/default-avatar.png'}
+                src={session.user?.image ?? '/default-avatar.png'}
                 alt="Profile"
                 className="w-8 h-8 rounded-full cursor-pointer"
                 width={32}

@@ -1,8 +1,8 @@
-// app/protected/page.tsx
+// src/app/protected/page.tsx
 
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../api/auth/[...nextauth]/route';  // Adjust the import path as needed
+import { authOptions } from '../api/auth/[...nextauth]/route'; // Ensure this path is correct
 
 const ProtectedPage = async () => {
   const session = await getServerSession(authOptions);

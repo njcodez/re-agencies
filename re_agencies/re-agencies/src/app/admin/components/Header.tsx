@@ -1,12 +1,24 @@
 "use client";
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const Header = () => {
+  const router = useRouter();
+
+  const handleLogout = () => {
+  
+    router.push('/admin');
+  };
+
   return (
-    <header className="bg-gray-800 text-white p-4 flex justify-between items-center">
-      <h1 className="text-xl font-bold">Admin Panel</h1>
-      <Link href="/api/admin/logout" className="text-red-500 hover:text-red-700">Logout</Link>
+    <header className="flex justify-between items-center p-4 bg-white shadow-md">
+      <div className="text-xl font-bold">Admin Panel</div>
+      <button
+        onClick={handleLogout}
+        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+      >
+        Logout
+      </button>
     </header>
   );
 };

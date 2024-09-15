@@ -1,7 +1,6 @@
-// src/app/cart/page.tsx
 "use client"
 import { useState } from 'react';
-import { ShoppingCartIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Dialog } from '@headlessui/react';
@@ -16,8 +15,6 @@ const CartPage = () => {
   ]);
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-
-  // Handle item removal
   const handleRemove = (id: number) => {
     setCartItems(cartItems.filter(item => item.id !== id));
   };
@@ -39,9 +36,9 @@ const CartPage = () => {
       <SessionProvider><Header /></SessionProvider>
 
       {/* Main Cart Content */}
-      <main className="mt-24 p-6">
+      <main className="flex-1 mt-24 p-6 flex flex-col lg:flex-row lg:space-x-10 space-y-6 lg:space-y-0">
         {cartItems.length > 0 ? (
-          <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-10">
+          <div className="flex-1 flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-10">
             {/* Cart Items List */}
             <div className="w-full lg:w-2/3">
               {cartItems.map((item) => (
@@ -73,10 +70,13 @@ const CartPage = () => {
             </div>
 
             {/* Cart Summary */}
-            <div className="w-full lg:w-1/3 bg-white p-6 shadow-md rounded-lg">
-              <h2 className="text-xl font-semibold mb-4">Cart Summary</h2>
-              <div className="mb-6">
-                <p className="text-lg font-medium">Total: ₹{totalPrice}</p>
+            <div className="w-full lg:w-1/3 bg-white p-6 shadow-md rounded-lg flex flex-col justify-between">
+              <div className="flex flex-col flex-grow">
+                <h2 className="text-xl font-semibold mb-4">Cart Summary</h2>
+                <div className="flex-grow"></div>
+                <div className="mb-6">
+                  <p className="text-2xl font-bold">Total: ₹{totalPrice}</p>
+                </div>
               </div>
               <button
                 className="w-full py-2 bg-green-600 text-white rounded-md"
@@ -87,7 +87,7 @@ const CartPage = () => {
             </div>
           </div>
         ) : (
-          <div className="text-center py-20">
+          <div className="text-center py-20 flex-1 flex flex-col justify-center">
             <h2 className="text-2xl font-semibold">Your cart is empty</h2>
             <Link href="/products" className="mt-6 inline-block px-6 py-2 bg-blue-600 text-white rounded-md">
               Explore Products

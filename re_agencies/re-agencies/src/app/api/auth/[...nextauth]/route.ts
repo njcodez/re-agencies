@@ -1,3 +1,5 @@
+// src/app/api/auth/[...nextauth]/route.ts
+
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
@@ -8,12 +10,6 @@ export const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-
-  
-  // pages: {
-  //   signIn: '/auth/signin',  // Custom sign-in page
-  //   signOut: '/auth/signout', // Custom sign-out page
-  // },
 };
 
 const handler = NextAuth(authOptions);

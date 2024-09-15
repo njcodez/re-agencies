@@ -1,27 +1,37 @@
 "use client";
-
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import Image from 'next/image';
-import Header from '../../_components/Header';
-import { placeholderProducts } from '../../_components/ProductSection';
-import { SessionProvider } from 'next-auth/react';
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import Image from "next/image";
+import Header from "../../_components/Header";
+import { fetchProductById } from "../../../lib/productService";
+import { addToCart } from "../../../lib/cartService";
+import { useSession, signIn, SessionProvider } from "next-auth/react";
 
 const ProductPage = () => {
   const params = useParams();
   const id = params?.id as string | undefined;
+  const { data: session } = useSession();
 
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
+  const [quantity, setQuantity] = useState<number>(1);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Fetch product details
   useEffect(() => {
-    const fetchProduct = () => {
+    const fetchProduct = async () => {
       if (id) {
-        const selectedProduct = placeholderProducts.find((product) => product.id === parseInt(id));
-        setProduct(selectedProduct || null);
-        if (selectedProduct?.images.length) {
-          setCurrentImageIndex(0); // Ensure to set the initial image index if images are available
+        try {
+          const fetchedProduct = await fetchProductById(parseInt(id));
+          setProduct(fetchedProduct ?? null);
+          if (fetchedProduct?.images.length) {
+            setCurrentImageIndex(0);
+          }
+        } catch (error) {
+          console.error("Error fetching product:", error);
+          setProduct(null);
         }
       } else {
         setProduct(null);
@@ -32,71 +42,124 @@ const ProductPage = () => {
     fetchProduct();
   }, [id]);
 
+  // Handle image navigation
   const handlePrevImage = () => {
     if (product?.images?.length) {
-      setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? product.images.length - 1 : prevIndex - 1));
+      setCurrentImageIndex((prevIndex) =>
+        prevIndex === 0 ? product.images.length - 1 : prevIndex - 1,
+      );
     }
   };
 
   const handleNextImage = () => {
     if (product?.images?.length) {
-      setCurrentImageIndex((prevIndex) => (prevIndex === product.images.length - 1 ? 0 : prevIndex + 1));
+      setCurrentImageIndex((prevIndex) =>
+        prevIndex === product.images.length - 1 ? 0 : prevIndex + 1,
+      );
     }
   };
 
+  // Handle add to cart action
+  const handleAddToCart = async () => {
+    if (!session) {
+      signIn();
+      return;
+    }
+
+    if (product && quantity > 0) {
+      try {
+        setError(null);
+        setSuccessMessage(null);
+        await addToCart(product.id, quantity, session.user.id);
+        setSuccessMessage("Product added to cart!");
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+        setError("Failed to add product to cart. Please try again.");
+      }
+    } else {
+      setError("Please select a valid quantity.");
+    }
+  };
+
+  // Loading state
   if (loading) {
-    return <p>Loading...</p>;
+    return <p className="mt-20 text-center text-dark-green">Loading...</p>;
   }
 
+  // No product found
   if (!product) {
-    return <p>Product not found</p>;
+    return (
+      <p className="mt-20 text-center text-dark-green">Product not found</p>
+    );
   }
 
   return (
-    <div className="min-h-screen">
-      <SessionProvider><Header /></SessionProvider>
-      <main className="container mx-auto p-6 mt-24">
-        <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-        <div className="flex flex-col md:flex-row">
-          <div className="md:w-1/2 relative">
+    <div className="min-h-screen bg-white text-dark-green">
+      <Header />
+      <main className="container mx-auto mt-48 p-6">
+        <div className="flex flex-col items-start md:flex-row">
+          <div className="relative mx-auto md:w-1/2">
             {product.images && product.images.length > 0 ? (
-              <div className="relative h-80 w-full rounded-lg overflow-hidden">
+              <div className="relative h-80 w-full overflow-hidden rounded-lg shadow-lg">
                 <Image
-                  src={product.images[currentImageIndex]}
+                  src={
+                    product.images[currentImageIndex] ??
+                    "/placeholder-image.png"
+                  }
                   alt={product.name}
                   layout="fill"
                   objectFit="contain"
                   className="rounded-lg"
                 />
                 <button
-                  className="absolute top-1/2 left-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-r-lg"
+                  className="hover:bg-dark-green-dark absolute left-2 top-1/2 -translate-y-1/2 transform rounded-full bg-dark-green p-3 text-white shadow-lg transition duration-300"
                   onClick={handlePrevImage}
                 >
                   &lt;
                 </button>
                 <button
-                  className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-l-lg"
+                  className="hover:bg-dark-green-dark absolute right-2 top-1/2 -translate-y-1/2 transform rounded-full bg-dark-green p-3 text-white shadow-lg transition duration-300"
                   onClick={handleNextImage}
                 >
                   &gt;
                 </button>
               </div>
             ) : (
-              <p>No images available</p>
+              <p className="text-center text-dark-green">No images available</p>
             )}
           </div>
+
           <div className="md:w-1/2 md:pl-8">
-            <p className="text-xl font-semibold mb-4">₹{product.price}</p>
-            <p className="text-gray-700 mb-6">{product.description}</p>
-            <div className="flex items-center space-x-4">
+            <h1 className="mb-4 text-4xl font-bold text-dark-green">
+              {product.name}
+            </h1>
+            <p className="mb-4 text-2xl font-semibold text-dark-green">
+              ₹{product.price}
+            </p>
+            <p className="mb-6 text-gray-700">{product.description}</p>
+
+            <div className="mb-6 flex items-center space-x-4">
               <input
                 type="number"
                 min="1"
-                defaultValue="1"
-                className="border border-gray-300 p-2 rounded-md"
+                value={quantity}
+                onChange={(e) =>
+                  setQuantity(Math.max(1, parseInt(e.target.value)))
+                }
+                className="w-24 rounded-md border border-dark-green p-3 focus:outline-none focus:ring-2 focus:ring-dark-green"
               />
-              <button className="bg-indigo-600 text-white px-4 py-2 rounded-md">Add to Cart</button>
+              <button
+                className="hover:bg-dark-green-dark rounded-md bg-dark-green px-6 py-3 text-white shadow-lg transition duration-300"
+                onClick={handleAddToCart}
+              >
+                Add to Cart
+              </button>
             </div>
+
+            {error && <p className="mt-4 text-red-500">{error}</p>}
+            {successMessage && (
+              <p className="mt-4 text-green-500">{successMessage}</p>
+            )}
           </div>
         </div>
       </main>
@@ -104,4 +167,10 @@ const ProductPage = () => {
   );
 };
 
-export default ProductPage;
+const WrappedProductPage = () => (
+  <SessionProvider>
+    <ProductPage />
+  </SessionProvider>
+);
+
+export default WrappedProductPage;

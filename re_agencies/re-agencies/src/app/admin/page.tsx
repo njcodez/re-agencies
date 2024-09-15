@@ -12,7 +12,7 @@ const AdminLogin = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch('/api/admin/login', {
+    const res = await fetch('api/admin/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
